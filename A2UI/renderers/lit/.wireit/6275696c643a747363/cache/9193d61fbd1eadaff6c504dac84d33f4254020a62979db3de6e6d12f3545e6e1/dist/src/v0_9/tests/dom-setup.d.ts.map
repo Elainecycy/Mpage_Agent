@@ -1,0 +1,1 @@
+{"version":3,"file":"dom-setup.d.ts","sourceRoot":"","sources":["../../../../src/v0_9/tests/dom-setup.ts"],"names":[],"mappings":"AA+BA;;;;;;;GAOG;AACH,wBAAgB,YAAY,SA8D3B;AAED;;GAEG;AACH,wBAAgB,eAAe,SAQ9B;AAED;;;GAGG;AACH,wBAAsB,WAAW,CAAC,CAAC,GAAG,GAAG,EACvC,MAAM,EAAE,CAAC,EACT,QAAQ,EAAE,CAAC,EAAE,EAAE,CAAC,KAAK,IAAI,GAAG,OAAO,CAAC,IAAI,CAAC,GACxC,OAAO,CAAC,IAAI,CAAC,CAQf"}
