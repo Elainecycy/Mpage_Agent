@@ -1,0 +1,44 @@
+{
+  "components": [
+    { "id": "root", "component": "Page", "children": ["header-1", "chapter-1", "chapter-2"] },
+
+    { "id": "header-1", "component": "Header", "children": ["header-bg", "main-title", "sub-title"] },
+    { "id": "header-bg", "component": "BackgroundImage", "src": { "path": "/images/headerBg" }, "height": 220 },
+    { "id": "main-title", "component": "Text", "content": { "path": "/texts/mainTitle" },
+      "style": { "fontSize": 28, "color": "#FFFFFF", "fontWeight": "bold", "textAlign": "center" } },
+    { "id": "sub-title", "component": "Text", "content": { "path": "/texts/subTitle" },
+      "style": { "fontSize": 14, "color": "#FFFFFF", "textAlign": "center" } },
+
+    { "id": "chapter-1", "component": "Chapter", "children": ["chapter-title-1", "card-bg-text-1"] },
+    { "id": "chapter-title-1", "component": "Text", "content": { "path": "/texts/chapter1Title" },
+      "style": { "fontSize": 20, "color": "#333333", "fontWeight": "bold" } },
+    { "id": "card-bg-text-1", "component": "BackgroundTextCard",
+      "backgroundImage": { "path": "/images/cardBg1" },
+      "content": { "path": "/texts/card1Text" },
+      "style": { "fontSize": 18, "color": "#FFFFFF", "fontWeight": "bold", "textAlign": "center" } },
+
+    { "id": "chapter-2", "component": "Chapter", "children": ["card-icon-1", "card-text-2"] },
+    { "id": "card-icon-1", "component": "IconCard",
+      "src": { "path": "/images/giftIcon" },
+      "title": { "path": "/texts/iconCardTitle" },
+      "style": { "fontSize": 14, "color": "#333333" } },
+    { "id": "card-text-2", "component": "TextCard",
+      "content": { "path": "/texts/card2Text" },
+      "style": { "fontSize": 12, "color": "#666666" } }
+  ],
+  "data": {
+    "texts": {
+      "mainTitle":     "夏日嗨购节",
+      "subTitle":      "满减券天天领",
+      "chapter1Title": "热门活动",
+      "card1Text":     "新客立减 50 元",
+      "iconCardTitle": "会员专享",
+      "card2Text":     "活动详情以页面公示为准。"
+    },
+    "images": {
+      "headerBg": { "url": "https://cdn.test.bank.com/summer/kv.png", "name": "kv.png" },
+      "cardBg1":  { "url": "https://cdn.test.bank.com/summer/card_bg.png", "name": "card_bg.png" },
+      "giftIcon": { "url": "https://cdn.test.bank.com/summer/gift.png", "name": "gift.png" }
+    }
+  }
+}
