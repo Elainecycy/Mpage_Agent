@@ -3,9 +3,9 @@
 AI 页面生成 Agent 的服务端。上游文档见 [设计方案](../docs/ai-page-builder-agent.md)、
 [迭代计划](../docs/development-iteration-plan.md)、[服务端技改](../docs/tech-spec-phase1-agent.md)。
 
-当前进度：**任务 0.2 / 1.1 / 1.2 / 1.3 / 1.4 已落地**——服务可启动；页面 JSON 两层校验、
-Prompt 组装、LLM 网关薄抽象与「调模型→校验→自愈重试」的生成服务均已就绪并有单测。
-素材清单接入（F1/1.5）与生成接口（F5/1.6，HTTP 端点 + 落库）为后续任务。
+当前进度：**任务 0.2 / 1.1 / 1.2 / 1.3 / 1.4 / 1.5 已落地**——服务可启动；页面 JSON 两层校验、
+Prompt 组装、LLM 网关薄抽象、「调模型→校验→自愈重试」的生成服务、素材清单接入校验（F1）
+均已就绪并有单测。生成接口（F5/1.6，HTTP 端点 + 并发锁 + 落库）为后续任务。
 
 ## 目录
 
@@ -24,7 +24,8 @@ app/
     prompt_builder.py    Prompt 组装（F2）：system prompt + user message + 自愈反馈
     prompts/             prompt 文案模板（system_prompt.md）
     llm_gateway.py       LLM 网关薄抽象（F3）：统一 complete，换模型只改配置
-    generator.py         页面生成服务（F3）：组装→调模型→两层校验→自愈重试
+    manifest.py          素材清单校验（F1）：调模型前挡掉非法 manifest
+    generator.py         页面生成服务（F3）：素材校验→组装→调模型→两层校验→自愈重试
   models/ schemas/ utils/   预留模块（后续填充）
 tests/
   unit/                单元测试（校验、Prompt、网关、生成服务、空服务启动）
@@ -58,7 +59,8 @@ uv run pytest -q
 - `tests/unit/test_check_integrity.py`：第二层引用完整性，每条规则配反例（任务 1.2 验收）。
 - `tests/unit/test_prompt_builder.py`：Prompt 五段结构 + few-shot 合法 + 确定性（任务 1.3 验收）。
 - `tests/unit/test_llm_gateway.py`：网关解析/JSON mode/超时与错误映射，MockTransport 脱网（任务 1.4）。
-- `tests/unit/test_generator.py`：首过/围栏容错/自愈重试/失败/防编造/孤儿清理/错误映射（任务 1.4 验收）。
+- `tests/unit/test_generator.py`：首过/围栏容错/自愈重试/失败/防编造/孤儿清理/错误映射/素材接入（任务 1.4 + 1.5 验收）。
+- `tests/unit/test_manifest.py`：素材清单合法/空/缺url/格式错/超量/字段类型（任务 1.5 验收）。
 - `tests/unit/test_app_boots.py`：应用可构建、/health 正常（任务 0.2 验收）。
 
 > 注：`uv run pytest` 偶发 spawn 抖动时，可直接用 `.venv/bin/pytest -q` 跑（等价）。
@@ -80,7 +82,9 @@ uv run pytest -q
 入口 `app.services.generator.generate_page_json(user_prompt, asset_manifest, *, gateway?, trace_id?, max_retries?)`：
 
 ```
-build_messages(描述+素材清单)               # 1.3 Prompt 组装
+validate_manifest(素材清单)                 # 1.5/F1 调模型前先挡非法清单 → INVALID_MANIFEST
+      │
+      ▼  build_messages(描述+素材清单)        # 1.3 Prompt 组装
       │
       ▼  LLMGateway.complete(messages)        # 1.4 网关薄抽象（OpenAI 兼容）
 解析输出（容忍 ```json 围栏）
@@ -89,6 +93,11 @@ build_messages(描述+素材清单)               # 1.3 Prompt 组装
    ┌── 通过 ──► 清理孤儿 key ──► GenerationResult{page_json, attempts, pruned_keys, tokens}
    └── 不过 ──► 把错误回灌模型(build_fix_feedback)重试，最多 1 次 ──► 仍不过 ──► 抛 AppError
 ```
+
+- **素材清单接入（F1）**：`app.services.manifest.validate_manifest` 在调用模型**之前**校验
+  清单（是数组、非空、≤20 项、每项含合法 http(s) url、可选字段类型正确），不合法即抛
+  `INVALID_MANIFEST`、不耗模型调用。清单同时注入 Prompt（选图）与作为 URL 白名单（防编造）。
+  **图片上传/存 OSS 在平台后端转换层完成，本服务不含任何上传/OSS/文件流逻辑**（职责边界）。
 
 - **换模型只改配置**：网关地址/密钥/模型名/温度/超时/JSON mode 全在 `MPAGE_LLM_*`
   环境变量（见 `.env.example`），`generate_page_json` / `LLMGateway` 代码不动。

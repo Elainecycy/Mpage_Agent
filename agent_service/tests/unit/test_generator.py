@@ -70,6 +70,25 @@ def test_first_try_success() -> None:
     assert result.pruned_keys == []
 
 
+def test_invalid_manifest_rejected_before_model_call() -> None:
+    """素材清单非法时调用模型前即拒绝：抛 INVALID_MANIFEST，且未触达网关（F1 接入）。"""
+    gw = FakeGateway([])  # 一旦被调用就会 IndexError，借此证明根本没调
+    with pytest.raises(AppError) as ei:
+        generate_page_json("x", [], gateway=gw)
+    assert ei.value.code is ErrorCode.INVALID_MANIFEST
+    assert gw.calls == []
+
+
+def test_unused_asset_does_not_break_generation() -> None:
+    """清单含模型未使用的素材时不影响生成，且最终 data.images 不含未引用项（验收 §4.1.2-3）。"""
+    example, manifest = _example_and_manifest()
+    manifest = manifest + [{"url": "https://cdn.example.com/unused.png", "name": "unused.png"}]
+    result = generate_page_json("x", manifest, gateway=FakeGateway([json.dumps(example)]), max_retries=0)
+    assert result.attempts == 1
+    used_urls = {v["url"] for v in result.page_json["data"]["images"].values()}
+    assert "https://cdn.example.com/unused.png" not in used_urls
+
+
 def test_markdown_fence_tolerated() -> None:
     """模型误用 ```json 围栏包裹时仍能解析成功。"""
     example, manifest = _example_and_manifest()

@@ -21,6 +21,7 @@ from app.catalog import check_integrity, prune_orphan_data_keys, validate_page
 from app.config import get_settings
 from app.errors import AppError, ErrorCode
 from app.services.llm_gateway import LLMGateway, LLMTimeoutError, LLMError, SupportsComplete
+from app.services.manifest import validate_manifest
 from app.services.prompt_builder import build_fix_feedback, build_messages
 
 logger = logging.getLogger(__name__)
@@ -111,6 +112,7 @@ def generate_page_json(
     """据用户描述与素材清单生成合法的页面 JSON（带自愈重试）。
 
     大致逻辑：
+        0. 先校验素材清单（F1）；不合格直接抛 ``INVALID_MANIFEST``，不调用模型；
         1. 用 ``build_messages`` 拼 system+user 消息；
         2. 循环最多 ``max_retries+1`` 次：调网关 → 解析 → 两层校验；
         3. 通过则清理孤儿 data key、记日志、返回 ``GenerationResult``；
@@ -130,7 +132,8 @@ def generate_page_json(
         ``GenerationResult``：含最终页面 JSON、实际调用次数、被清理的孤儿 key 与 token 用量。
 
     Raises:
-        AppError: ``MODEL_TIMEOUT``（超时）/ ``MODEL_ERROR``（网关异常）/
+        AppError: ``INVALID_MANIFEST``（素材清单非法，调用模型前即拒绝）/
+            ``MODEL_TIMEOUT``（超时）/ ``MODEL_ERROR``（网关异常）/
             ``GENERATION_FAILED``（重试耗尽仍未过两层校验）。
 
     Example:
@@ -138,6 +141,9 @@ def generate_page_json(
         >>> result.page_json["components"][0]["component"]
         'Page'
     """
+    # F1（1.5）：调用模型前先校验素材清单；不合法直接抛 INVALID_MANIFEST，不耗模型调用
+    validate_manifest(asset_manifest)
+
     settings = get_settings()
     gateway = gateway or LLMGateway(settings)
     trace_id = trace_id or uuid4().hex
