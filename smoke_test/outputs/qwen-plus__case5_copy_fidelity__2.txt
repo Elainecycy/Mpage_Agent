@@ -1,0 +1,38 @@
+{
+  "components": [
+    { "id": "root", "component": "Page", "children": ["header-1", "chapter-1", "chapter-2"] },
+
+    { "id": "header-1", "component": "Header", "children": ["header-bg", "main-title", "sub-title"] },
+    { "id": "header-bg", "component": "BackgroundImage", "src": { "path": "/images/headerBg" }, "height": 220 },
+    { "id": "main-title", "component": "Text", "content": { "path": "/texts/mainTitle" },
+      "style": { "fontSize": 28, "color": "#FFFFFF", "fontWeight": "bold" } },
+    { "id": "sub-title", "component": "Text", "content": { "path": "/texts/subTitle" },
+      "style": { "fontSize": 14, "color": "#FFFFFF" } },
+
+    { "id": "chapter-1", "component": "Chapter", "children": ["chapter-title-1", "card-text-1"] },
+    { "id": "chapter-title-1", "component": "Text", "content": { "path": "/texts/chapter1Title" },
+      "style": { "fontSize": 20, "color": "#333333", "fontWeight": "bold" } },
+    { "id": "card-text-1", "component": "TextCard",
+      "content": { "path": "/texts/card1Text" },
+      "style": { "fontSize": 14, "color": "#333333" } },
+
+    { "id": "chapter-2", "component": "Chapter", "children": ["card-bg-text-1"] },
+    { "id": "card-bg-text-1", "component": "BackgroundTextCard",
+      "backgroundImage": { "path": "/images/btnBg" },
+      "content": { "path": "/texts/card2Text" },
+      "style": { "fontSize": 18, "color": "#FFFFFF", "fontWeight": "bold", "textAlign": "center" } }
+  ],
+  "data": {
+    "texts": {
+      "mainTitle":     "十周年盛典",
+      "subTitle":      "感恩有你 一路同行",
+      "chapter1Title": "活动规则",
+      "card1Text":     "活动期间单笔消费满 1,000 元立减 88 元，每位用户限享 3 次，名额共 50,000 个，先到先得。",
+      "card2Text":     "立即参与"
+    },
+    "images": {
+      "headerBg": { "url": "https://cdn.test.bank.com/anniv/kv.png", "name": "kv.png" },
+      "btnBg":    { "url": "https://cdn.test.bank.com/anniv/btn_bg.png", "name": "btn_bg.png" }
+    }
+  }
+}

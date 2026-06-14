@@ -1,0 +1,70 @@
+[
+  {
+    "id": "case1_basic",
+    "name": "单章节 + 明确指定卡片类型",
+    "focus": "基本格式能力；素材清单里有一张用不上的图，看是否乱塞",
+    "user_prompt": "做一个暑期消费节活动页：头图用主视觉图，主标题\"夏日嗨购节\"，副标题\"满减券天天领\"。第一个章节标题\"热门活动\"，放一张有背景图的文字卡片写\"新客立减 50 元\"；第二个章节不要标题，放一张图标卡片（图标用礼盒图，标题\"会员专享\"）和一段活动规则文字卡片，规则写\"活动详情以页面公示为准\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/summer/kv.png",      "name": "kv.png",      "note": "主视觉大图" },
+      { "url": "https://cdn.test.bank.com/summer/card_bg.png", "name": "card_bg.png", "note": "卡片背景" },
+      { "url": "https://cdn.test.bank.com/summer/gift.png",    "name": "gift.png",    "note": "礼盒图标" },
+      { "url": "https://cdn.test.bank.com/summer/banner2.png", "name": "banner2.png", "note": "备用横幅" }
+    ],
+    "min_chapters": 2,
+    "must_contain_texts": ["夏日嗨购节", "新客立减 50 元"]
+  },
+  {
+    "id": "case2_structure",
+    "name": "三章节 + 三种卡片混用 + 一节无标题",
+    "focus": "结构组装、children 顺序、无标题章节的处理",
+    "user_prompt": "做一个会员日活动页。头图主标题\"超级会员日\"，副标题\"权益升级 限时开抢\"，头图右上角放一个皇冠小图标。第一章节标题\"今日秒杀\"，用章节背景图，里面放一张背景文字卡片写\"爆款 5 折起\"。第二章节标题\"会员权益\"，放两张图标卡片：一张图标用优惠券图、标题\"专属券包\"、说明\"每月领 3 张\"；另一张图标用快递图、标题\"免费配送\"、说明\"不限次数\"。第三章节不要标题，放一段纯文字的温馨提示：\"以上权益最终解释权归平台所有\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/vip/kv.png",        "name": "kv.png",        "note": "头图主视觉" },
+      { "url": "https://cdn.test.bank.com/vip/crown.png",     "name": "crown.png",     "note": "皇冠小图标" },
+      { "url": "https://cdn.test.bank.com/vip/section1.png",  "name": "section1.png",  "note": "第一章节背景" },
+      { "url": "https://cdn.test.bank.com/vip/flash_bg.png",  "name": "flash_bg.png",  "note": "秒杀卡片背景" },
+      { "url": "https://cdn.test.bank.com/vip/coupon.png",    "name": "coupon.png",    "note": "优惠券图标" },
+      { "url": "https://cdn.test.bank.com/vip/express.png",   "name": "express.png",   "note": "快递图标" }
+    ],
+    "min_chapters": 3,
+    "must_contain_texts": ["超级会员日", "爆款 5 折起", "免费配送"]
+  },
+  {
+    "id": "case3_card_choice",
+    "name": "不点名卡片类型，只说内容",
+    "focus": "卡片选型判断：卖点配图标应选 IconCard，长段文字应选 TextCard",
+    "user_prompt": "做一个理财产品介绍页。头图主标题\"稳盈精选\"。第一章节标题\"产品亮点\"，放三条卖点，每条都配一个小图标：安全（盾牌图标，说明\"银行级风控\"）、灵活（闪电图标，说明\"随存随取\"）、省心（笑脸图标，说明\"专人服务\"）。第二章节标题\"购买须知\"，放一段较长的说明文字：\"本产品非保本浮动收益型，过往业绩不代表未来表现，投资需谨慎。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/fund/kv.png",     "name": "kv.png",     "note": "头图" },
+      { "url": "https://cdn.test.bank.com/fund/shield.png", "name": "shield.png", "note": "盾牌图标" },
+      { "url": "https://cdn.test.bank.com/fund/flash.png",  "name": "flash.png",  "note": "闪电图标" },
+      { "url": "https://cdn.test.bank.com/fund/smile.png",  "name": "smile.png",  "note": "笑脸图标" }
+    ],
+    "min_chapters": 2,
+    "must_contain_texts": ["银行级风控", "本产品非保本浮动收益型，过往业绩不代表未来表现，投资需谨慎。"]
+  },
+  {
+    "id": "case4_url_trap",
+    "name": "素材不够用的诱导场景",
+    "focus": "重点：素材只有 2 张图，描述暗示需要更多图，看会不会编造 URL（期望：宁可少放或复用，绝不编造）",
+    "user_prompt": "做一个开学季活动页。头图主标题\"开学焕新季\"。第一章节标题\"装备清单\"，放三张图标卡片：文具（标题\"文具上新\"）、书包（标题\"书包焕新\"）、电脑（标题\"数码特惠\"）。第二章节放一段活动说明：\"活动时间 9 月 1 日至 9 月 15 日\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/school/kv.png",  "name": "kv.png",  "note": "头图" },
+      { "url": "https://cdn.test.bank.com/school/pen.png", "name": "pen.png", "note": "文具图标" }
+    ],
+    "min_chapters": 2,
+    "must_contain_texts": ["开学焕新季"]
+  },
+  {
+    "id": "case5_copy_fidelity",
+    "name": "长文案带数字，要求原样保留",
+    "focus": "文案保真：具体数字和句子必须一字不差进 data.texts，不被模型改写",
+    "user_prompt": "做一个周年庆活动页。头图主标题\"十周年盛典\"，副标题\"感恩有你 一路同行\"。第一章节标题\"活动规则\"，放一段文字卡片，内容必须一字不差地用这句话：\"活动期间单笔消费满 1,000 元立减 88 元，每位用户限享 3 次，名额共 50,000 个，先到先得。\"第二章节不要标题，放一张有背景图的文字卡片写\"立即参与\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/anniv/kv.png",     "name": "kv.png",     "note": "头图" },
+      { "url": "https://cdn.test.bank.com/anniv/btn_bg.png", "name": "btn_bg.png", "note": "按钮背景" }
+    ],
+    "min_chapters": 2,
+    "must_contain_texts": ["活动期间单笔消费满 1,000 元立减 88 元，每位用户限享 3 次，名额共 50,000 个，先到先得。"]
+  }
+]
