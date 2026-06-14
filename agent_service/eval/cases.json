@@ -1,0 +1,489 @@
+[
+  {
+    "id": "c01_basic_single",
+    "name": "最简：一章节一卡片",
+    "focus": "最基本格式与单卡片",
+    "user_prompt": "做一个简单的优惠活动页。头图主标题\"限时特惠\"。一个章节标题\"今日推荐\"，放一段文字卡片写\"全场八折，仅限今天\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c01/kv.png", "name": "kv.png", "note": "头图" }
+    ],
+    "expect": {
+      "min_chapters": 1, "max_chapters": 1,
+      "card_slots": [ { "chapter": 0, "card": 0, "accept": ["TextCard"] } ],
+      "expected_assets": ["https://cdn.test.bank.com/c01/kv.png"],
+      "must_contain_texts": ["限时特惠", "全场八折，仅限今天"]
+    }
+  },
+  {
+    "id": "c02_three_cards_mixed",
+    "name": "三种卡片混排 + 一节无标题",
+    "focus": "结构组装、三种卡片、无标题章节",
+    "user_prompt": "做一个会员日活动页。头图主标题\"超级会员日\"，副标题\"权益升级 限时开抢\"，右上角放一个皇冠小图标。第一章节标题\"今日秒杀\"，用章节背景图，放一张背景文字卡片写\"爆款五折起\"。第二章节不要标题，放一张图标卡片（优惠券图标，标题\"专属券包\"，说明\"每月领三张\"）和一段纯文字提示\"最终解释权归平台所有\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c02/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c02/crown.png", "name": "crown.png", "note": "皇冠图标" },
+      { "url": "https://cdn.test.bank.com/c02/sec1.png", "name": "sec1.png", "note": "章节背景" },
+      { "url": "https://cdn.test.bank.com/c02/flash_bg.png", "name": "flash_bg.png", "note": "秒杀卡片背景" },
+      { "url": "https://cdn.test.bank.com/c02/coupon.png", "name": "coupon.png", "note": "优惠券图标" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 1, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c02/crown.png", "https://cdn.test.bank.com/c02/coupon.png"],
+      "must_contain_texts": ["超级会员日", "爆款五折起"]
+    }
+  },
+  {
+    "id": "c03_card_inference",
+    "name": "不点名卡片类型，只给内容",
+    "focus": "卡片选型推断：卖点配图标→IconCard，长说明→TextCard",
+    "user_prompt": "做一个理财产品介绍页。头图主标题\"稳盈精选\"。第一章节标题\"产品亮点\"，三条卖点各配一个小图标：安全（盾牌图标，说明\"银行级风控\"）、灵活（闪电图标，说明\"随存随取\"）、省心（笑脸图标，说明\"专人服务\"）。第二章节标题\"购买须知\"，放一段较长说明：\"本产品非保本浮动收益型，过往业绩不代表未来表现。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c03/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c03/shield.png", "name": "shield.png", "note": "盾牌" },
+      { "url": "https://cdn.test.bank.com/c03/flash.png", "name": "flash.png", "note": "闪电" },
+      { "url": "https://cdn.test.bank.com/c03/smile.png", "name": "smile.png", "note": "笑脸" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 2, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c03/shield.png", "https://cdn.test.bank.com/c03/flash.png", "https://cdn.test.bank.com/c03/smile.png"],
+      "must_contain_texts": ["银行级风控", "本产品非保本浮动收益型，过往业绩不代表未来表现。"]
+    }
+  },
+  {
+    "id": "c04_url_trap_few_assets",
+    "name": "素材不够的诱导场景",
+    "focus": "防编造：只有两张图却暗示要更多，绝不能编 url",
+    "user_prompt": "做一个开学季活动页。头图主标题\"开学焕新季\"。第一章节标题\"装备清单\"，放三张图标卡片：文具（标题\"文具上新\"）、书包（标题\"书包焕新\"）、电脑（标题\"数码特惠\"）。第二章节放一段说明\"活动时间九月一日至九月十五日\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c04/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c04/pen.png", "name": "pen.png", "note": "文具图标" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [ { "chapter": 1, "card": 0, "accept": ["TextCard"] } ],
+      "expected_assets": ["https://cdn.test.bank.com/c04/kv.png"],
+      "must_contain_texts": ["开学焕新季", "活动时间九月一日至九月十五日"]
+    }
+  },
+  {
+    "id": "c05_copy_fidelity_numbers",
+    "name": "长文案带数字，原样保留",
+    "focus": "文案保真：数字句子一字不差进 data.texts",
+    "user_prompt": "做一个周年庆活动页。头图主标题\"十周年盛典\"，副标题\"感恩有你\"。第一章节标题\"活动规则\"，放一段文字卡片，必须一字不差用这句话：\"活动期间单笔消费满 1,000 元立减 88 元，每位用户限享 3 次，名额共 50,000 个，先到先得。\"第二章节不要标题，放一张有背景图的文字卡片写\"立即参与\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c05/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c05/btn_bg.png", "name": "btn_bg.png", "note": "按钮背景" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["TextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["BackgroundTextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c05/btn_bg.png"],
+      "must_contain_texts": ["活动期间单笔消费满 1,000 元立减 88 元，每位用户限享 3 次，名额共 50,000 个，先到先得。"]
+    }
+  },
+  {
+    "id": "c06_four_chapters",
+    "name": "四章节长页面",
+    "focus": "较长结构、章节顺序",
+    "user_prompt": "做一个购物节主会场页。头图主标题\"年中大促\"。第一章节标题\"会场入口\"放一段文字\"点击进入分会场\"。第二章节标题\"爆款推荐\"放一张背景文字卡片写\"top1 爆款直降\"。第三章节标题\"优惠券\"放一张图标卡片（优惠券图标，标题\"满 300 减 50\"）。第四章节不要标题，放一段文字\"活动以实际页面为准\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c06/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c06/hot_bg.png", "name": "hot_bg.png", "note": "爆款卡背景" },
+      { "url": "https://cdn.test.bank.com/c06/coupon.png", "name": "coupon.png", "note": "优惠券图标" }
+    ],
+    "expect": {
+      "min_chapters": 4, "max_chapters": 4,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["TextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 2, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 3, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c06/hot_bg.png", "https://cdn.test.bank.com/c06/coupon.png"],
+      "must_contain_texts": ["年中大促", "top1 爆款直降"]
+    }
+  },
+  {
+    "id": "c07_header_multi_icon",
+    "name": "头图多个小图标",
+    "focus": "Header 含多个 Icon",
+    "user_prompt": "做一个品牌联名活动页。头图主标题\"双品牌联名\"，副标题\"限量发售\"，左上角放品牌 A 图标、右上角放品牌 B 图标。一个章节标题\"联名款\"，放一张背景文字卡片写\"联名限定 先到先得\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c07/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c07/brandA.png", "name": "brandA.png", "note": "品牌A图标" },
+      { "url": "https://cdn.test.bank.com/c07/brandB.png", "name": "brandB.png", "note": "品牌B图标" },
+      { "url": "https://cdn.test.bank.com/c07/co_bg.png", "name": "co_bg.png", "note": "联名卡背景" }
+    ],
+    "expect": {
+      "min_chapters": 1, "max_chapters": 1,
+      "card_slots": [ { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] } ],
+      "expected_assets": ["https://cdn.test.bank.com/c07/brandA.png", "https://cdn.test.bank.com/c07/brandB.png", "https://cdn.test.bank.com/c07/co_bg.png"],
+      "must_contain_texts": ["双品牌联名", "联名限定 先到先得"]
+    }
+  },
+  {
+    "id": "c08_icon_card_heavy",
+    "name": "多张图标卡片",
+    "focus": "同章节多张 IconCard",
+    "user_prompt": "做一个 App 功能介绍页。头图主标题\"全新功能上线\"。一个章节标题\"四大功能\"，放四张图标卡片：转账（标题\"极速转账\"）、理财（标题\"智能理财\"）、缴费（标题\"一键缴费\"）、客服（标题\"在线客服\"）。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c08/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c08/transfer.png", "name": "transfer.png", "note": "转账" },
+      { "url": "https://cdn.test.bank.com/c08/invest.png", "name": "invest.png", "note": "理财" },
+      { "url": "https://cdn.test.bank.com/c08/pay.png", "name": "pay.png", "note": "缴费" },
+      { "url": "https://cdn.test.bank.com/c08/service.png", "name": "service.png", "note": "客服" }
+    ],
+    "expect": {
+      "min_chapters": 1, "max_chapters": 1,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 2, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 3, "accept": ["IconCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c08/transfer.png", "https://cdn.test.bank.com/c08/invest.png", "https://cdn.test.bank.com/c08/pay.png", "https://cdn.test.bank.com/c08/service.png"],
+      "must_contain_texts": ["全新功能上线", "极速转账"]
+    }
+  },
+  {
+    "id": "c09_bg_text_heavy",
+    "name": "多张背景文字卡片",
+    "focus": "连续 BackgroundTextCard",
+    "user_prompt": "做一个旅游线路推荐页。头图主标题\"暑期出游季\"。一个章节标题\"热门线路\"，放两张有背景图的文字卡片：第一张背景用海岛图写\"海岛五日游\"，第二张背景用雪山图写\"雪山三日游\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c09/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c09/island.png", "name": "island.png", "note": "海岛背景" },
+      { "url": "https://cdn.test.bank.com/c09/snow.png", "name": "snow.png", "note": "雪山背景" }
+    ],
+    "expect": {
+      "min_chapters": 1, "max_chapters": 1,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 0, "card": 1, "accept": ["BackgroundTextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c09/island.png", "https://cdn.test.bank.com/c09/snow.png"],
+      "must_contain_texts": ["海岛五日游", "雪山三日游"]
+    }
+  },
+  {
+    "id": "c10_no_title_chapters",
+    "name": "全部章节都无标题",
+    "focus": "无标题章节连排",
+    "user_prompt": "做一个极简风格的公告页。头图主标题\"系统升级公告\"。第一个章节不要标题，放一段文字\"系统将于本周日凌晨维护\"。第二个章节也不要标题，放一段文字\"维护期间暂停服务\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c10/kv.png", "name": "kv.png", "note": "头图" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["TextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c10/kv.png"],
+      "must_contain_texts": ["系统升级公告", "系统将于本周日凌晨维护"]
+    }
+  },
+  {
+    "id": "c11_recruit",
+    "name": "招聘宣传页",
+    "focus": "图标卖点 + 长文",
+    "user_prompt": "做一个校园招聘页。头图主标题\"加入我们\"，副标题\"2026 校招启动\"。第一章节标题\"为什么选择我们\"，放三张图标卡片：成长（图标，标题\"快速成长\"）、福利（图标，标题\"六险一金\"）、氛围（图标，标题\"年轻团队\"）。第二章节标题\"投递方式\"，放一段文字\"请将简历发送至 hr@example.com，截止 12 月 31 日。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c11/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c11/grow.png", "name": "grow.png", "note": "成长" },
+      { "url": "https://cdn.test.bank.com/c11/welfare.png", "name": "welfare.png", "note": "福利" },
+      { "url": "https://cdn.test.bank.com/c11/team.png", "name": "team.png", "note": "氛围" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 2, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c11/grow.png", "https://cdn.test.bank.com/c11/welfare.png", "https://cdn.test.bank.com/c11/team.png"],
+      "must_contain_texts": ["加入我们", "请将简历发送至 hr@example.com，截止 12 月 31 日。"]
+    }
+  },
+  {
+    "id": "c12_food_delivery",
+    "name": "外卖满减页",
+    "focus": "背景卡 + 图标卡 + 规则文字混排",
+    "user_prompt": "做一个外卖满减活动页。头图主标题\"超值满减\"，副标题\"天天领券\"。第一章节标题\"今日爆款\"用章节背景图，放一张背景文字卡片写\"招牌套餐 19 元\"。第二章节标题\"领券中心\"，放两张图标卡片：满 20 减 5（图标，标题\"小额券\"）、满 50 减 15（图标，标题\"大额券\"）。第三章节不要标题，放一段文字\"每日 0 点更新\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c12/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c12/sec_bg.png", "name": "sec_bg.png", "note": "章节背景" },
+      { "url": "https://cdn.test.bank.com/c12/combo_bg.png", "name": "combo_bg.png", "note": "套餐卡背景" },
+      { "url": "https://cdn.test.bank.com/c12/coupon_s.png", "name": "coupon_s.png", "note": "小额券图标" },
+      { "url": "https://cdn.test.bank.com/c12/coupon_l.png", "name": "coupon_l.png", "note": "大额券图标" }
+    ],
+    "expect": {
+      "min_chapters": 3, "max_chapters": 3,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 2, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c12/combo_bg.png", "https://cdn.test.bank.com/c12/coupon_s.png", "https://cdn.test.bank.com/c12/coupon_l.png"],
+      "must_contain_texts": ["超值满减", "招牌套餐 19 元"]
+    }
+  },
+  {
+    "id": "c13_insurance",
+    "name": "保险产品页（合规长文）",
+    "focus": "图标卖点 + 大段免责声明原样",
+    "user_prompt": "做一个保险产品页。头图主标题\"安心保\"。第一章节标题\"产品保障\"，放两张图标卡片：医疗（图标，标题\"百万医疗\"）、意外（图标，标题\"意外保障\"）。第二章节标题\"重要提示\"，放一段文字，必须一字不差：\"本产品由保险公司承保，具体保障责任、责任免除以保险条款为准，请在投保前仔细阅读。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c13/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c13/medical.png", "name": "medical.png", "note": "医疗图标" },
+      { "url": "https://cdn.test.bank.com/c13/accident.png", "name": "accident.png", "note": "意外图标" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c13/medical.png", "https://cdn.test.bank.com/c13/accident.png"],
+      "must_contain_texts": ["本产品由保险公司承保，具体保障责任、责任免除以保险条款为准，请在投保前仔细阅读。"]
+    }
+  },
+  {
+    "id": "c14_points_mall",
+    "name": "积分商城页",
+    "focus": "背景卡 + 多图标卡",
+    "user_prompt": "做一个积分商城页。头图主标题\"积分换好礼\"，右上角放一个礼物图标。第一章节标题\"热门兑换\"用背景图，放一张背景文字卡片写\"1000 积分换咖啡券\"。第二章节标题\"全部好礼\"，放三张图标卡片：实物（图标，标题\"实物专区\"）、券码（图标，标题\"券码专区\"）、抽奖（图标，标题\"积分抽奖\"）。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c14/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c14/gift.png", "name": "gift.png", "note": "礼物图标" },
+      { "url": "https://cdn.test.bank.com/c14/hot_bg.png", "name": "hot_bg.png", "note": "热门卡背景" },
+      { "url": "https://cdn.test.bank.com/c14/goods.png", "name": "goods.png", "note": "实物图标" },
+      { "url": "https://cdn.test.bank.com/c14/code.png", "name": "code.png", "note": "券码图标" },
+      { "url": "https://cdn.test.bank.com/c14/lottery.png", "name": "lottery.png", "note": "抽奖图标" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 2, "accept": ["IconCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c14/gift.png", "https://cdn.test.bank.com/c14/hot_bg.png", "https://cdn.test.bank.com/c14/goods.png", "https://cdn.test.bank.com/c14/code.png", "https://cdn.test.bank.com/c14/lottery.png"],
+      "must_contain_texts": ["积分换好礼", "1000 积分换咖啡券"]
+    }
+  },
+  {
+    "id": "c15_health",
+    "name": "健康体检套餐页",
+    "focus": "纯文字段落选型",
+    "user_prompt": "做一个健康体检套餐页。头图主标题\"关爱健康\"，副标题\"年度体检季\"。第一章节标题\"套餐介绍\"，放一段文字\"基础套餐含血常规、肝功能、心电图等十二项检查。\"第二章节标题\"预约须知\"，放一段文字\"请提前三天预约，体检当天需空腹。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c15/kv.png", "name": "kv.png", "note": "头图" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["TextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c15/kv.png"],
+      "must_contain_texts": ["基础套餐含血常规、肝功能、心电图等十二项检查。", "请提前三天预约，体检当天需空腹。"]
+    }
+  },
+  {
+    "id": "c16_education",
+    "name": "在线课程页",
+    "focus": "图标课程卡 + 背景促销卡",
+    "user_prompt": "做一个在线课程推广页。头图主标题\"名师好课\"。第一章节标题\"精选课程\"，放两张图标卡片：编程（图标，标题\"零基础编程\"，说明\"30 天入门\"）、设计（图标，标题\"平面设计\"，说明\"实战教学\"）。第二章节不要标题，放一张有背景图的文字卡片写\"限时五折 立即抢购\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c16/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c16/code.png", "name": "code.png", "note": "编程图标" },
+      { "url": "https://cdn.test.bank.com/c16/design.png", "name": "design.png", "note": "设计图标" },
+      { "url": "https://cdn.test.bank.com/c16/promo_bg.png", "name": "promo_bg.png", "note": "促销卡背景" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 0, "accept": ["BackgroundTextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c16/code.png", "https://cdn.test.bank.com/c16/design.png", "https://cdn.test.bank.com/c16/promo_bg.png"],
+      "must_contain_texts": ["名师好课", "限时五折 立即抢购"]
+    }
+  },
+  {
+    "id": "c17_min_no_sub",
+    "name": "无副标题的最简头图",
+    "focus": "Header 只有主标题（无副标题、无图标）",
+    "user_prompt": "做一个简单通知页。头图只要一个主标题\"重要通知\"，不要副标题也不要图标。一个章节标题\"通知内容\"，放一段文字\"明日为公休日，网点暂停营业。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c17/kv.png", "name": "kv.png", "note": "头图" }
+    ],
+    "expect": {
+      "min_chapters": 1, "max_chapters": 1,
+      "card_slots": [ { "chapter": 0, "card": 0, "accept": ["TextCard"] } ],
+      "expected_assets": ["https://cdn.test.bank.com/c17/kv.png"],
+      "must_contain_texts": ["重要通知", "明日为公休日，网点暂停营业。"]
+    }
+  },
+  {
+    "id": "c18_new_year",
+    "name": "新春活动页（迭代计划验收用例同款主题）",
+    "focus": "验收主线场景",
+    "user_prompt": "做一个新春活动页，头图用主视觉图，主标题\"新春特惠\"。下面一个章节标题\"年货推荐\"放一张有背景图的文字卡片写\"年货直降\"，再一个章节不要标题放一张图标卡片（红包图标，标题\"集卡领红包\"）和一段规则文案\"活动规则以页面公示为准\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c18/bg.png", "name": "bg.png", "note": "头图主视觉" },
+      { "url": "https://cdn.test.bank.com/c18/card_bg.png", "name": "card_bg.png", "note": "年货卡背景" },
+      { "url": "https://cdn.test.bank.com/c18/redbag.png", "name": "redbag.png", "note": "红包图标" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 1, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c18/bg.png", "https://cdn.test.bank.com/c18/card_bg.png", "https://cdn.test.bank.com/c18/redbag.png"],
+      "must_contain_texts": ["新春特惠", "年货直降"]
+    }
+  },
+  {
+    "id": "c19_unused_distractor",
+    "name": "素材含多张干扰图",
+    "focus": "不乱塞：清单里一半图用不上",
+    "user_prompt": "做一个简单的开业活动页。头图主标题\"盛大开业\"。一个章节标题\"开业福利\"放一段文字\"开业三天全场五折\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c19/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c19/extra1.png", "name": "extra1.png", "note": "备用图1" },
+      { "url": "https://cdn.test.bank.com/c19/extra2.png", "name": "extra2.png", "note": "备用图2" },
+      { "url": "https://cdn.test.bank.com/c19/extra3.png", "name": "extra3.png", "note": "备用图3" }
+    ],
+    "expect": {
+      "min_chapters": 1, "max_chapters": 1,
+      "card_slots": [ { "chapter": 0, "card": 0, "accept": ["TextCard"] } ],
+      "expected_assets": ["https://cdn.test.bank.com/c19/kv.png"],
+      "must_contain_texts": ["盛大开业", "开业三天全场五折"]
+    }
+  },
+  {
+    "id": "c20_travel_long",
+    "name": "旅游攻略长页",
+    "focus": "三章节 + 背景卡 + 图标卡 + 长文",
+    "user_prompt": "做一个城市旅游攻略页。头图主标题\"city walk 指南\"。第一章节标题\"必去景点\"放一张有背景图的文字卡片写\"古城墙打卡\"。第二章节标题\"美食推荐\"放两张图标卡片：小吃（图标，标题\"地道小吃\"）、餐厅（图标，标题\"网红餐厅\"）。第三章节标题\"出行提示\"放一段文字\"建议错峰出行，注意保管随身物品。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c20/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c20/wall_bg.png", "name": "wall_bg.png", "note": "景点卡背景" },
+      { "url": "https://cdn.test.bank.com/c20/snack.png", "name": "snack.png", "note": "小吃图标" },
+      { "url": "https://cdn.test.bank.com/c20/restaurant.png", "name": "restaurant.png", "note": "餐厅图标" }
+    ],
+    "expect": {
+      "min_chapters": 3, "max_chapters": 3,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 2, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c20/wall_bg.png", "https://cdn.test.bank.com/c20/snack.png", "https://cdn.test.bank.com/c20/restaurant.png"],
+      "must_contain_texts": ["古城墙打卡", "建议错峰出行，注意保管随身物品。"]
+    }
+  },
+  {
+    "id": "c21_bank_card",
+    "name": "银行卡办卡页",
+    "focus": "卖点图标 + 背景促销卡",
+    "user_prompt": "做一个信用卡办卡页。头图主标题\"白金信用卡\"，副标题\"尊享权益\"。第一章节标题\"专属权益\"放三张图标卡片：机场贵宾厅（图标，标题\"贵宾厅\"）、酒店折扣（图标，标题\"酒店礼遇\"）、积分加倍（图标，标题\"积分加速\"）。第二章节不要标题放一张有背景图的文字卡片写\"立即申请 首年免年费\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c21/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c21/lounge.png", "name": "lounge.png", "note": "贵宾厅图标" },
+      { "url": "https://cdn.test.bank.com/c21/hotel.png", "name": "hotel.png", "note": "酒店图标" },
+      { "url": "https://cdn.test.bank.com/c21/points.png", "name": "points.png", "note": "积分图标" },
+      { "url": "https://cdn.test.bank.com/c21/apply_bg.png", "name": "apply_bg.png", "note": "申请卡背景" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 1, "accept": ["IconCard"] },
+        { "chapter": 0, "card": 2, "accept": ["IconCard"] },
+        { "chapter": 1, "card": 0, "accept": ["BackgroundTextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c21/lounge.png", "https://cdn.test.bank.com/c21/hotel.png", "https://cdn.test.bank.com/c21/points.png", "https://cdn.test.bank.com/c21/apply_bg.png"],
+      "must_contain_texts": ["白金信用卡", "立即申请 首年免年费"]
+    }
+  },
+  {
+    "id": "c22_single_icon_card",
+    "name": "单张图标卡片",
+    "focus": "最简 IconCard",
+    "user_prompt": "做一个客服入口页。头图主标题\"联系我们\"。一个章节不要标题，放一张图标卡片：电话图标，标题\"客服热线\"，说明\"400-123-4567\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c22/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c22/phone.png", "name": "phone.png", "note": "电话图标" }
+    ],
+    "expect": {
+      "min_chapters": 1, "max_chapters": 1,
+      "card_slots": [ { "chapter": 0, "card": 0, "accept": ["IconCard"] } ],
+      "expected_assets": ["https://cdn.test.bank.com/c22/phone.png"],
+      "must_contain_texts": ["联系我们", "400-123-4567"]
+    }
+  },
+  {
+    "id": "c23_promo_mixed",
+    "name": "促销混合页（含规则长文）",
+    "focus": "背景卡 + 规则文案保真",
+    "user_prompt": "做一个双十一活动页。头图主标题\"双十一狂欢\"，副标题\"全场钜惠\"。第一章节标题\"主推爆品\"用背景图，放一张背景文字卡片写\"爆品一元秒杀\"。第二章节标题\"活动细则\"放一段文字，必须一字不差：\"每个 ID 限购 1 件，活动数量有限，售完即止，不与其他优惠同享。\"",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c23/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c23/sec_bg.png", "name": "sec_bg.png", "note": "章节背景" },
+      { "url": "https://cdn.test.bank.com/c23/sec_kill_bg.png", "name": "sec_kill_bg.png", "note": "秒杀卡背景" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["BackgroundTextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c23/sec_kill_bg.png"],
+      "must_contain_texts": ["双十一狂欢", "每个 ID 限购 1 件，活动数量有限，售完即止，不与其他优惠同享。"]
+    }
+  },
+  {
+    "id": "c24_ambiguous_choice",
+    "name": "卡片类型留有余地",
+    "focus": "宽松判分：未明确点名时多种卡片可接受",
+    "user_prompt": "做一个新品发布页。头图主标题\"新品发布\"。第一章节标题\"产品特点\"，放一条主打卖点\"超长续航\"（可以配图也可以纯文字）。第二章节不要标题，放一段文字\"敬请期待\"。",
+    "asset_manifest": [
+      { "url": "https://cdn.test.bank.com/c24/kv.png", "name": "kv.png", "note": "头图" },
+      { "url": "https://cdn.test.bank.com/c24/battery.png", "name": "battery.png", "note": "续航图标（可选用）" }
+    ],
+    "expect": {
+      "min_chapters": 2, "max_chapters": 2,
+      "card_slots": [
+        { "chapter": 0, "card": 0, "accept": ["IconCard", "TextCard", "BackgroundTextCard"] },
+        { "chapter": 1, "card": 0, "accept": ["TextCard"] }
+      ],
+      "expected_assets": ["https://cdn.test.bank.com/c24/kv.png"],
+      "must_contain_texts": ["新品发布", "超长续航"]
+    }
+  }
+]

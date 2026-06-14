@@ -3,9 +3,10 @@
 AI 页面生成 Agent 的服务端。上游文档见 [设计方案](../docs/ai-page-builder-agent.md)、
 [迭代计划](../docs/development-iteration-plan.md)、[服务端技改](../docs/tech-spec-phase1-agent.md)。
 
-当前进度：**第 1 期服务端整体贯通（任务 0.2 / 1.1~1.6 全部落地）**——页面 JSON 两层校验、
+当前进度：**第 1 期服务端整体贯通（任务 0.2 / 1.1~1.6 + 1.11 测试题库）**——页面 JSON 两层校验、
 Prompt 组装、LLM 网关薄抽象、「调模型→校验→自愈重试」的生成服务、素材清单接入（F1）、
-以及对外的生成接口（F5：HTTP 端点 + 同 pageId 并发锁 + 落库）均已就绪并有单测，前端可直接调用。
+对外生成接口（F5：HTTP 端点 + 并发锁 + 落库）均已就绪并有单测；并建好 24 题测试题库,
+**联真模型(qwen-plus)实测合格率/卡片选对/素材命中三项 100%**（见 `eval/README.md`）。前端可直接调用。
 
 ## 目录
 
@@ -37,8 +38,9 @@ app/
     page_store.py        落库（F5）：save_generation / get_current_page
     page_locks.py        同 pageId 生成串行化锁（决议 §9）
   utils/               预留模块（后续填充）
+eval/                  测试题库 v0（1.11）：cases.json + 纯函数判分器 + 跑批脚本（详见 eval/README.md）
 tests/
-  unit/                单元测试（校验、Prompt、网关、生成、素材、落库、并发锁、生成接口、启动）
+  unit/                单元测试（校验、Prompt、网关、生成、素材、落库、并发锁、生成接口、判分器、启动）
 ```
 
 ## 环境准备
@@ -95,9 +97,13 @@ uv run pytest -q
 - `tests/unit/test_page_store.py`：落库版本递增/当前态更新/版本快照/查询缺失（任务 1.6 验收）。
 - `tests/unit/test_page_locks.py`：同 pageId 串行化、撞车 409、不同页互不影响（任务 1.6 / 决议 §9）。
 - `tests/unit/test_generate_api.py`：端到端——成功生成+落库+查回/版本递增/并发409/素材400/失败422/超时504/缺记录404（任务 1.6 验收）。
+- `tests/unit/test_eval_scorer.py`：测试题库判分逻辑（卡片/素材/文案命中、汇总），不依赖真模型（任务 1.11）。
 - `tests/unit/test_app_boots.py`：应用可构建、/health 正常（任务 0.2 验收）。
 
 > 注：`uv run pytest` 偶发 spawn 抖动时，可直接用 `.venv/bin/pytest -q` 跑（等价）。
+
+**质量评测**（任务 1.11）：`.venv/bin/python -m eval.run_eval` 跑 24 题测试题库,量化合格率/
+卡片选对/素材命中。需 `.env` 配好模型网关密钥。详见 [eval/README.md](eval/README.md)。
 
 ## 校验分层（设计文档 §4.5）
 
