@@ -31,6 +31,8 @@ class Settings(BaseSettings):
         database_url: 会话/版本存储连接串，默认本地 SQLite，线上换主库。``MPAGE_DATABASE_URL``。
         app_name: 服务名，用于日志与 /health。``MPAGE_APP_NAME``。
         log_level: 日志级别。``MPAGE_LOG_LEVEL``。
+        call_log_enabled: 是否把每次生成的全量调用记录（脱敏后）落盘。``MPAGE_CALL_LOG_ENABLED``。
+        call_log_dir: 调用日志落盘目录（按天分文件 JSONL）。``MPAGE_CALL_LOG_DIR``。
     """
 
     model_config = SettingsConfigDict(
@@ -55,6 +57,10 @@ class Settings(BaseSettings):
     # —— 服务 ——
     app_name: str = "mpage-agent"
     log_level: str = "INFO"
+
+    # —— 全量调用日志（技改 §4.3.1：prompt/原始输出/校验错误/重试/延迟/token 按 traceId 落盘）——
+    call_log_enabled: bool = True
+    call_log_dir: str = "./logs"
 
 
 @lru_cache(maxsize=1)

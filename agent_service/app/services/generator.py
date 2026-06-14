@@ -20,6 +20,7 @@ from uuid import uuid4
 from app.catalog import check_integrity, prune_orphan_data_keys, validate_page
 from app.config import get_settings
 from app.errors import AppError, ErrorCode
+from app.services.call_log import GenerationLog, write_generation_log
 from app.services.llm_gateway import LLMGateway, LLMTimeoutError, LLMError, SupportsComplete
 from app.services.manifest import validate_manifest
 from app.services.prompt_builder import build_fix_feedback, build_messages
@@ -151,59 +152,86 @@ def generate_page_json(
 
     messages = build_messages(user_prompt, asset_manifest)
     last_errors: list[str] = []
+    # 全量调用日志：贯穿首次调用与重试逐条累积，finally 里统一脱敏落盘一次
+    call_log = GenerationLog(
+        trace_id=trace_id, user_prompt=user_prompt, asset_count=len(asset_manifest)
+    )
 
-    for attempt in range(retries + 1):
-        try:
-            resp = gateway.complete(messages)
-        except LLMTimeoutError as exc:
-            logger.warning("generate trace=%s attempt=%d 模型超时", trace_id, attempt + 1)
-            raise AppError(ErrorCode.MODEL_TIMEOUT, str(exc)) from exc
-        except LLMError as exc:
-            logger.warning("generate trace=%s attempt=%d 网关错误: %s", trace_id, attempt + 1, exc)
-            raise AppError(ErrorCode.MODEL_ERROR, str(exc)) from exc
+    try:
+        for attempt in range(retries + 1):
+            try:
+                resp = gateway.complete(messages)
+            except LLMTimeoutError as exc:
+                logger.warning("generate trace=%s attempt=%d 模型超时", trace_id, attempt + 1)
+                call_log.error_code = ErrorCode.MODEL_TIMEOUT.value
+                call_log.add_attempt(
+                    attempt=attempt + 1, messages=messages, raw_output="", latency_s=0.0,
+                    prompt_tokens=None, completion_tokens=None, errors=[f"模型超时: {exc}"],
+                )
+                raise AppError(ErrorCode.MODEL_TIMEOUT, str(exc)) from exc
+            except LLMError as exc:
+                logger.warning("generate trace=%s attempt=%d 网关错误: %s", trace_id, attempt + 1, exc)
+                call_log.error_code = ErrorCode.MODEL_ERROR.value
+                call_log.add_attempt(
+                    attempt=attempt + 1, messages=messages, raw_output="", latency_s=0.0,
+                    prompt_tokens=None, completion_tokens=None, errors=[f"网关错误: {exc}"],
+                )
+                raise AppError(ErrorCode.MODEL_ERROR, str(exc)) from exc
 
-        logger.info(
-            "generate trace=%s attempt=%d latency=%.2fs tokens=%s/%s",
-            trace_id, attempt + 1, resp.latency_s, resp.prompt_tokens, resp.completion_tokens,
-        )
-
-        try:
-            page = _parse_page_json(resp.content)
-            errors, report = _validate_page(page, asset_manifest)
-        except ValueError as exc:
-            errors, report, page = [str(exc)], None, None
-
-        if not errors:
-            pruned = prune_orphan_data_keys(page, report.orphan_data_keys)
-            if pruned:
-                logger.info("generate trace=%s 清理孤儿 data key: %s", trace_id, pruned)
-            logger.info("generate trace=%s 成功 attempts=%d", trace_id, attempt + 1)
-            return GenerationResult(
-                page_json=page,
-                attempts=attempt + 1,
-                trace_id=trace_id,
-                pruned_keys=pruned,
-                model=resp.model,
-                prompt_tokens=resp.prompt_tokens,
-                completion_tokens=resp.completion_tokens,
+            logger.info(
+                "generate trace=%s attempt=%d latency=%.2fs tokens=%s/%s",
+                trace_id, attempt + 1, resp.latency_s, resp.prompt_tokens, resp.completion_tokens,
             )
 
-        last_errors = errors
-        logger.warning(
-            "generate trace=%s attempt=%d 校验未过(%d 条): %s",
-            trace_id, attempt + 1, len(errors), "; ".join(errors[:5]),
-        )
-        if attempt < retries:
-            messages = messages + [
-                {"role": "assistant", "content": resp.content},
-                {"role": "user", "content": build_fix_feedback(errors)},
-            ]
+            try:
+                page = _parse_page_json(resp.content)
+                errors, report = _validate_page(page, asset_manifest)
+            except ValueError as exc:
+                errors, report, page = [str(exc)], None, None
 
-    raise AppError(
-        ErrorCode.GENERATION_FAILED,
-        "生成的页面 JSON 多次未通过校验，请调整描述或重试。",
-        details={"errors": last_errors, "trace_id": trace_id, "attempts": retries + 1},
-    )
+            call_log.model = resp.model
+            call_log.add_attempt(
+                attempt=attempt + 1, messages=messages, raw_output=resp.content,
+                latency_s=resp.latency_s, prompt_tokens=resp.prompt_tokens,
+                completion_tokens=resp.completion_tokens, errors=errors,
+            )
+
+            if not errors:
+                pruned = prune_orphan_data_keys(page, report.orphan_data_keys)
+                if pruned:
+                    logger.info("generate trace=%s 清理孤儿 data key: %s", trace_id, pruned)
+                logger.info("generate trace=%s 成功 attempts=%d", trace_id, attempt + 1)
+                call_log.status = "success"
+                call_log.pruned_keys = pruned
+                return GenerationResult(
+                    page_json=page,
+                    attempts=attempt + 1,
+                    trace_id=trace_id,
+                    pruned_keys=pruned,
+                    model=resp.model,
+                    prompt_tokens=resp.prompt_tokens,
+                    completion_tokens=resp.completion_tokens,
+                )
+
+            last_errors = errors
+            logger.warning(
+                "generate trace=%s attempt=%d 校验未过(%d 条): %s",
+                trace_id, attempt + 1, len(errors), "; ".join(errors[:5]),
+            )
+            if attempt < retries:
+                messages = messages + [
+                    {"role": "assistant", "content": resp.content},
+                    {"role": "user", "content": build_fix_feedback(errors)},
+                ]
+
+        call_log.error_code = ErrorCode.GENERATION_FAILED.value
+        raise AppError(
+            ErrorCode.GENERATION_FAILED,
+            "生成的页面 JSON 多次未通过校验，请调整描述或重试。",
+            details={"errors": last_errors, "trace_id": trace_id, "attempts": retries + 1},
+        )
+    finally:
+        write_generation_log(call_log)
 
 
 __all__ = ["generate_page_json", "GenerationResult"]
