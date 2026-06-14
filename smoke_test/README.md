@@ -15,8 +15,9 @@
 
 ```bash
 # 1. 配置公司模型网关（OpenAI 兼容接口；不兼容时改 run_smoke.py 的 call_model 函数）
+#    密钥一律走环境变量，切勿把真实值写进任何会提交的文件。
 export SMOKE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-export SMOKE_API_KEY=***REMOVED***
+export SMOKE_API_KEY=<你的网关密钥>
 
 # 2. 先看看拼好的 prompt 长什么样（不调模型）
 python3 run_smoke.py --models any --dry-run
