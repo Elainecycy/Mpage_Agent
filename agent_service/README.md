@@ -3,32 +3,42 @@
 AI 页面生成 Agent 的服务端。上游文档见 [设计方案](../docs/ai-page-builder-agent.md)、
 [迭代计划](../docs/development-iteration-plan.md)、[服务端技改](../docs/tech-spec-phase1-agent.md)。
 
-当前进度：**任务 0.2 / 1.1 / 1.2 / 1.3 / 1.4 / 1.5 已落地**——服务可启动；页面 JSON 两层校验、
-Prompt 组装、LLM 网关薄抽象、「调模型→校验→自愈重试」的生成服务、素材清单接入校验（F1）
-均已就绪并有单测。生成接口（F5/1.6，HTTP 端点 + 并发锁 + 落库）为后续任务。
+当前进度：**第 1 期服务端整体贯通（任务 0.2 / 1.1~1.6 全部落地）**——页面 JSON 两层校验、
+Prompt 组装、LLM 网关薄抽象、「调模型→校验→自愈重试」的生成服务、素材清单接入（F1）、
+以及对外的生成接口（F5：HTTP 端点 + 同 pageId 并发锁 + 落库）均已就绪并有单测，前端可直接调用。
 
 ## 目录
 
 ```
 app/
   config.py            运行期配置（环境变量驱动的 Settings）
-  main.py              FastAPI 应用工厂 + 全局异常处理
+  main.py              FastAPI 应用工厂 + lifespan 建表 + AppError/兜底异常处理
   errors.py            结构化错误码 ErrorCode + 领域异常 AppError（决议 §6）
-  api/routes/          路由：health（业务路由后续挂入）
+  db.py                DB 装配（F5）：引擎/会话/建表/get_session 依赖（决议 §3）
+  api/
+    deps.py              依赖提供者：get_gateway（可被测试覆盖）
+    routes/              路由：health + pages（生成接口 F5）
+      pages.py             POST /{id}/generate + GET /{id}
   catalog/             页面 JSON 契约 + 两层校验 + few-shot 单一真源
     page_schema.json     格式契约（第一层 JSON Schema）
     integrity.py         第二层引用完整性校验（check_integrity）
     example_page.json    附录 A 标准示例（Prompt few-shot 与测试共用）
     __init__.py          校验/示例加载入口（validate_page / check_integrity / load_example_page）
+  models/
+    page.py              ORM：pages（当前态）+ page_revisions（版本快照，决议 §3）
+  schemas/
+    generate.py          生成接口请求/响应体（GenerateRequest / GenerateResponse）
   services/            生成链路服务
     prompt_builder.py    Prompt 组装（F2）：system prompt + user message + 自愈反馈
     prompts/             prompt 文案模板（system_prompt.md）
     llm_gateway.py       LLM 网关薄抽象（F3）：统一 complete，换模型只改配置
     manifest.py          素材清单校验（F1）：调模型前挡掉非法 manifest
     generator.py         页面生成服务（F3）：素材校验→组装→调模型→两层校验→自愈重试
-  models/ schemas/ utils/   预留模块（后续填充）
+    page_store.py        落库（F5）：save_generation / get_current_page
+    page_locks.py        同 pageId 生成串行化锁（决议 §9）
+  utils/               预留模块（后续填充）
 tests/
-  unit/                单元测试（校验、Prompt、网关、生成服务、空服务启动）
+  unit/                单元测试（校验、Prompt、网关、生成、素材、落库、并发锁、生成接口、启动）
 ```
 
 ## 环境准备
@@ -49,6 +59,27 @@ curl http://127.0.0.1:8000/health
 # -> {"status":"ok","service":"mpage-agent","model":"qwen-plus"}
 ```
 
+启动时自动建表（`lifespan` 调 `init_db`）。数据库由 `MPAGE_DATABASE_URL` 决定，缺省为本地
+SQLite（`sqlite:///./mpage_agent.db`），改环境变量即可切 MySQL/PG，业务代码不动（决议 §3）。
+
+## API（生成接口 F5）
+
+**生成页面**：`POST /api/pages/{pageId}/generate`
+
+```jsonc
+// 请求体
+{ "userPrompt": "做一个新春活动页……", "assetManifest": [ { "url": "https://cdn/.../bg.png", "name": "bg.png", "note": "头图" } ] }
+// 成功 200（按决议 ② 只返回 pageJson，platformConfig/previewUrl 由前端 Mapper 产）
+{ "pageId": "page_1", "version": 1, "pageJson": { "components": [...], "data": {...} } }
+```
+
+- 串联：同 pageId 并发锁 → 素材校验(F1) → 组装 → 调模型 → 两层校验 → 自愈重试 → 落库 → 返回。
+- 落库：写 `pages`（当前态）+ 追加 `page_revisions`（版本快照，本期只写不读），返回的 `version` 自 1 递增。
+- 失败一律结构化错误体 `{"error":{code,message,details?}}`：`invalid_manifest`(400) / `model_timeout`(504)
+  / `model_error`(502) / `generation_failed`(422) / `concurrent_generation`(409)。
+
+**查当前页面**：`GET /api/pages/{pageId}` → `{ "pageId", "pageJson" }`，无记录返回 404。
+
 ## 测试
 
 ```bash
@@ -61,6 +92,9 @@ uv run pytest -q
 - `tests/unit/test_llm_gateway.py`：网关解析/JSON mode/超时与错误映射，MockTransport 脱网（任务 1.4）。
 - `tests/unit/test_generator.py`：首过/围栏容错/自愈重试/失败/防编造/孤儿清理/错误映射/素材接入（任务 1.4 + 1.5 验收）。
 - `tests/unit/test_manifest.py`：素材清单合法/空/缺url/格式错/超量/字段类型（任务 1.5 验收）。
+- `tests/unit/test_page_store.py`：落库版本递增/当前态更新/版本快照/查询缺失（任务 1.6 验收）。
+- `tests/unit/test_page_locks.py`：同 pageId 串行化、撞车 409、不同页互不影响（任务 1.6 / 决议 §9）。
+- `tests/unit/test_generate_api.py`：端到端——成功生成+落库+查回/版本递增/并发409/素材400/失败422/超时504/缺记录404（任务 1.6 验收）。
 - `tests/unit/test_app_boots.py`：应用可构建、/health 正常（任务 0.2 验收）。
 
 > 注：`uv run pytest` 偶发 spawn 抖动时，可直接用 `.venv/bin/pytest -q` 跑（等价）。
