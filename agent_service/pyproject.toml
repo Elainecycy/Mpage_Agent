@@ -1,0 +1,28 @@
+[project]
+name = "agent-service"
+version = "0.1.0"
+description = "AI 页面生成 Agent 服务（第 1 期 · 文字生成页面）"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "jsonschema>=4.22",
+    "httpx>=0.27",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+]
+
+[tool.uv]
+# 这是一个可运行的服务（application），不是要被打包安装的库，
+# 让 uv 只装依赖、不构建本项目自身。
+package = false
+
+[tool.pytest.ini_options]
+# 让测试能直接 import app（项目未作为包安装）。
+pythonpath = ["."]
+testpaths = ["tests"]

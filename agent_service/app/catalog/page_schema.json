@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mpage.local/schemas/page-json/phase1.json",
+  "title": "Mpage 页面 JSON 契约（第 1 期 MVP）",
+  "description": "AI 页面生成的平铺邻接表契约：components[]（结构，文案/图片写 path 引用）+ data.texts / data.images（数据）。对齐设计文档 §3。第一层（JSON Schema）只管字段类型/必填/枚举；引用闭合、id 唯一、URL 白名单等图结构问题由第二层 check_integrity 负责。宽严分级：刻意不使用 additionalProperties:false，模型多写的无害字段由 Mapper 静默丢弃，避免无谓拉低合法率。",
+  "type": "object",
+  "required": ["components", "data"],
+  "properties": {
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "description": "平铺组件列表（邻接表），顺序不限，按 id 建 Map、从 root 还原树。",
+      "items": { "$ref": "#/$defs/component" }
+    },
+    "data": {
+      "type": "object",
+      "required": ["texts", "images"],
+      "description": "数据区：文案与图片各占一个命名空间。",
+      "properties": {
+        "texts": {
+          "type": "object",
+          "description": "文案命名空间：key -> 文案字符串。",
+          "additionalProperties": { "type": "string" }
+        },
+        "images": {
+          "type": "object",
+          "description": "图片命名空间：key -> { url, name? }。",
+          "additionalProperties": { "$ref": "#/$defs/imageAsset" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "textRef": {
+      "type": "object",
+      "description": "文案绑定：指向 data.texts.<key>。",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^/texts/.+" }
+      }
+    },
+    "imageRef": {
+      "type": "object",
+      "description": "图片绑定：指向 data.images.<key>。",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^/images/.+" }
+      }
+    },
+    "imageAsset": {
+      "type": "object",
+      "description": "data.images 的取值：真实 url + 可选元数据。",
+      "required": ["url"],
+      "properties": {
+        "url": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" }
+      }
+    },
+    "style": {
+      "type": "object",
+      "description": "统一文字样式键（仅描述文字呈现，不含位置尺寸）。",
+      "properties": {
+        "fontSize": { "type": "number" },
+        "color": { "type": "string" },
+        "fontWeight": { "type": "string", "enum": ["normal", "bold"] },
+        "textAlign": { "type": "string", "enum": ["left", "center", "right"] },
+        "lineHeight": { "type": "number" }
+      }
+    },
+    "position": {
+      "type": "object",
+      "description": "相对父级背景图左上角坐标（px，设计稿宽 375）；MVP 不输出，Phase 2 由 Vision 提供。",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "size": {
+      "type": "object",
+      "description": "组件占位宽高（px）。",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "number" },
+        "height": { "type": "number" }
+      }
+    },
+    "idList": {
+      "type": "array",
+      "description": "children：被引用的子组件 id 列表（渲染顺序即数组顺序）。",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "component": {
+      "type": "object",
+      "description": "单个组件节点。基础约束 + 按 component 类型分支补充必填字段。",
+      "required": ["id", "component"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "component": {
+          "type": "string",
+          "enum": [
+            "Page",
+            "Header",
+            "Chapter",
+            "BackgroundImage",
+            "Text",
+            "Icon",
+            "TextCard",
+            "IconCard",
+            "BackgroundTextCard"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "Page" } } },
+          "then": { "required": ["children"], "properties": { "children": { "$ref": "#/$defs/idList" } } }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "Header" } } },
+          "then": { "required": ["children"], "properties": { "children": { "$ref": "#/$defs/idList" } } }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "Chapter" } } },
+          "then": { "required": ["children"], "properties": { "children": { "$ref": "#/$defs/idList" } } }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "BackgroundImage" } } },
+          "then": {
+            "required": ["src"],
+            "properties": {
+              "src": { "$ref": "#/$defs/imageRef" },
+              "height": { "type": "number" }
+            }
+          }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "Text" } } },
+          "then": {
+            "required": ["content"],
+            "properties": {
+              "content": { "$ref": "#/$defs/textRef" },
+              "style": { "$ref": "#/$defs/style" },
+              "position": { "$ref": "#/$defs/position" },
+              "size": { "$ref": "#/$defs/size" }
+            }
+          }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "Icon" } } },
+          "then": {
+            "required": ["src"],
+            "properties": {
+              "src": { "$ref": "#/$defs/imageRef" },
+              "alt": { "type": "string" },
+              "position": { "$ref": "#/$defs/position" },
+              "size": { "$ref": "#/$defs/size" }
+            }
+          }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "TextCard" } } },
+          "then": {
+            "required": ["content"],
+            "properties": {
+              "content": { "$ref": "#/$defs/textRef" },
+              "style": { "$ref": "#/$defs/style" }
+            }
+          }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "IconCard" } } },
+          "then": {
+            "required": ["src"],
+            "properties": {
+              "src": { "$ref": "#/$defs/imageRef" },
+              "title": { "$ref": "#/$defs/textRef" },
+              "description": { "$ref": "#/$defs/textRef" },
+              "style": { "$ref": "#/$defs/style" }
+            }
+          }
+        },
+        {
+          "if": { "required": ["component"], "properties": { "component": { "const": "BackgroundTextCard" } } },
+          "then": {
+            "required": ["backgroundImage", "content"],
+            "properties": {
+              "backgroundImage": { "$ref": "#/$defs/imageRef" },
+              "content": { "$ref": "#/$defs/textRef" },
+              "style": { "$ref": "#/$defs/style" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

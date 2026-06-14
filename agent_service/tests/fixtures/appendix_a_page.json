@@ -1,0 +1,55 @@
+{
+  "components": [
+    { "id": "root", "component": "Page", "children": ["header-1", "chapter-1", "chapter-2"] },
+
+    { "id": "header-1", "component": "Header", "children": ["header-bg", "main-title", "sub-title", "icon-1"] },
+    { "id": "header-bg", "component": "BackgroundImage", "src": { "path": "/images/headerBg" }, "height": 220 },
+    { "id": "main-title", "component": "Text", "content": { "path": "/texts/mainTitle" },
+      "style": { "fontSize": 28, "color": "#FFFFFF", "fontWeight": "bold" } },
+    { "id": "sub-title", "component": "Text", "content": { "path": "/texts/subTitle" },
+      "style": { "fontSize": 14, "color": "#FFFFFF" } },
+    { "id": "icon-1", "component": "Icon", "src": { "path": "/images/badge" }, "alt": "活动角标" },
+
+    { "id": "chapter-1", "component": "Chapter",
+      "children": ["chapter-bg-1", "chapter-title-1", "card-bg-text-1", "card-text-1"] },
+    { "id": "chapter-bg-1", "component": "BackgroundImage", "src": { "path": "/images/chapterBg1" } },
+    { "id": "chapter-title-1", "component": "Text", "content": { "path": "/texts/chapter1Title" },
+      "style": { "fontSize": 20, "color": "#333333", "fontWeight": "bold" } },
+    { "id": "card-bg-text-1", "component": "BackgroundTextCard",
+      "backgroundImage": { "path": "/images/cardBg1" },
+      "content": { "path": "/texts/card1Text" },
+      "style": { "fontSize": 18, "color": "#FFFFFF", "fontWeight": "bold" } },
+    { "id": "card-text-1", "component": "TextCard",
+      "content": { "path": "/texts/card2Text" },
+      "style": { "fontSize": 12, "color": "#999999" } },
+
+    { "id": "chapter-2", "component": "Chapter", "children": ["card-icon-1", "card-text-2"] },
+    { "id": "card-icon-1", "component": "IconCard",
+      "src": { "path": "/images/cardIcon1" },
+      "title": { "path": "/texts/iconCardTitle" },
+      "description": { "path": "/texts/iconCardDesc" },
+      "style": { "fontSize": 14, "color": "#333333" } },
+    { "id": "card-text-2", "component": "TextCard",
+      "content": { "path": "/texts/card3Text" },
+      "style": { "fontSize": 12, "color": "#666666" } }
+  ],
+  "data": {
+    "texts": {
+      "mainTitle":     "新春理财季",
+      "subTitle":      "稳健收益 安心之选",
+      "chapter1Title": "热门产品",
+      "card1Text":     "新客专享活动",
+      "card2Text":     "活动期间完成指定任务，可领取专属权益。",
+      "iconCardTitle": "安心精选",
+      "iconCardDesc":  "为你推荐精选权益",
+      "card3Text":     "详细规则以活动页面展示为准。"
+    },
+    "images": {
+      "headerBg":   { "url": "https://cdn.example.com/header_bg.png",  "name": "header_bg.png" },
+      "badge":      { "url": "https://cdn.example.com/badge.png",      "name": "badge.png" },
+      "chapterBg1": { "url": "https://cdn.example.com/section_bg.png", "name": "section_bg.png" },
+      "cardBg1":    { "url": "https://cdn.example.com/card_bg.png",    "name": "card_bg.png" },
+      "cardIcon1":  { "url": "https://cdn.example.com/card_icon.png",  "name": "card_icon.png" }
+    }
+  }
+}
