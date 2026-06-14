@@ -121,4 +121,25 @@ def build_messages(user_prompt: str, asset_manifest: list[dict[str, Any]]) -> li
     ]
 
 
-__all__ = ["build_system_prompt", "build_user_message", "build_messages"]
+def build_fix_feedback(errors: list[str]) -> str:
+    """组装自愈重试的回灌消息：把校验错误明确告知模型并要求修正后重出。
+
+    大致逻辑：把两层校验的硬失败逐条列出（最多 20 条，避免消息过长），包成一段「请修正后
+    只输出完整 JSON」的指令，作为下一轮对话的 user 消息（生成服务在其前先追加上一轮的
+    assistant 输出，构成「你上次这么写 → 这里有错 → 请改」的上下文）。
+
+    Args:
+        errors: 两层校验产出的硬失败描述列表（``validate_page`` + ``check_integrity``）。
+
+    Returns:
+        回灌用的 user 消息文本。
+    """
+    listed = "\n".join(f"- {e}" for e in errors[:20])
+    return (
+        "你上一次输出的页面 JSON 有以下问题，请逐条修正后**只输出完整的页面 JSON**"
+        "（不要解释、不要 Markdown 代码块包裹）：\n"
+        f"{listed}"
+    )
+
+
+__all__ = ["build_system_prompt", "build_user_message", "build_messages", "build_fix_feedback"]
