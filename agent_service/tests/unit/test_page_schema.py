@@ -4,24 +4,18 @@
 确保 Schema 既不误杀合法示例、也能拦住典型非法输出。
 """
 
-import json
-from pathlib import Path
-
 import pytest
 
-from app.catalog import get_validator, load_page_schema, validate_page
-
-_FIXTURE = Path(__file__).parents[1] / "fixtures" / "appendix_a_page.json"
+from app.catalog import get_validator, load_example_page, load_page_schema, validate_page
 
 
 def _load_appendix_a() -> dict:
-    """读取附录 A 标准页面示例 fixture。
+    """取附录 A 标准页面示例的独立副本（单一真源 app/catalog/example_page.json）。
 
     Returns:
-        附录 A 的页面 JSON（dict）。
+        附录 A 的页面 JSON（dict，深拷贝，可随意改动）。
     """
-    with _FIXTURE.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    return load_example_page()
 
 
 def test_schema_self_valid() -> None:

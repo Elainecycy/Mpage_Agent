@@ -1,12 +1,17 @@
-"""组件 Catalog：页面 JSON 契约的机器可校验 Schema 与加载/校验入口。
+"""组件 Catalog：页面 JSON 契约的机器可校验 Schema 与两层校验入口。
 
-本模块是页面 JSON「第一层校验」（JSON Schema：字段类型/必填/枚举）的单一真源，
-对应设计文档 §4.5 的第一层。引用闭合、id 唯一、URL 白名单等图结构校验属于第二层
-``check_integrity``（任务 1.2，另行实现），不在此处。
+本模块承载页面 JSON 的**两层校验**（设计文档 §4.5）：
+- 第一层 ``validate_page``（本文件）：JSON Schema，字段类型/必填/枚举，单一真源是
+  ``page_schema.json``；
+- 第二层 ``check_integrity`` / ``prune_orphan_data_keys``（见 ``integrity.py``）：引用闭合、
+  id 唯一、URL 白名单等 Schema 查不出的图结构问题。
+
+两者从本包统一导出，调用方 ``from app.catalog import validate_page, check_integrity``。
 """
 
 from __future__ import annotations
 
+import copy
 import json
 from functools import lru_cache
 from pathlib import Path
@@ -14,7 +19,14 @@ from typing import Any
 
 from jsonschema.validators import Draft202012Validator
 
+from app.catalog.integrity import (
+    IntegrityReport,
+    check_integrity,
+    prune_orphan_data_keys,
+)
+
 _SCHEMA_PATH = Path(__file__).with_name("page_schema.json")
+_EXAMPLE_PATH = Path(__file__).with_name("example_page.json")
 
 
 @lru_cache(maxsize=1)
@@ -59,6 +71,33 @@ def get_validator() -> Draft202012Validator:
     return Draft202012Validator(schema)
 
 
+@lru_cache(maxsize=1)
+def _load_example_raw() -> dict[str, Any]:
+    """读取并缓存附录 A 标准页面示例（MVP 唯一 few-shot 的原始 dict）。
+
+    Returns:
+        解析后的示例页面 JSON dict（缓存的共享实例，勿直接改动；外部请用
+        ``load_example_page`` 取独立副本）。
+    """
+    with _EXAMPLE_PATH.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_example_page() -> dict[str, Any]:
+    """返回附录 A 标准页面示例的独立副本（Prompt few-shot 与测试的单一真源）。
+
+    大致逻辑：取缓存的原始 dict 做深拷贝返回，保证调用方随意改动不污染缓存、也不互相
+    影响。该示例是无坐标版（MVP），既作 Prompt 组装的唯一 few-shot，也是校验测试的标准正例。
+
+    Args:
+        无。
+
+    Returns:
+        附录 A 页面 JSON 的深拷贝 dict（含 ``components`` + ``data.texts`` / ``data.images``）。
+    """
+    return copy.deepcopy(_load_example_raw())
+
+
 def validate_page(page: dict[str, Any]) -> list[str]:
     """对页面 JSON 做第一层（JSON Schema）校验，返回人类/模型可读的错误列表。
 
@@ -86,4 +125,12 @@ def validate_page(page: dict[str, Any]) -> list[str]:
     return errors
 
 
-__all__ = ["load_page_schema", "get_validator", "validate_page"]
+__all__ = [
+    "load_page_schema",
+    "get_validator",
+    "validate_page",
+    "load_example_page",
+    "IntegrityReport",
+    "check_integrity",
+    "prune_orphan_data_keys",
+]
